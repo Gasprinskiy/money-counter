@@ -6,24 +6,19 @@ import {
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
-import { useColorScheme } from "@/components/useColorScheme";
 import { Slot } from "expo-router";
+import { Appearance } from 'react-native';
 
 import "../global.css";
+import { initDatabase } from "@/packages/db/root";
 
 export {
-  // Catch any errors thrown by the Layout component.
   ErrorBoundary,
 } from "expo-router";
 
-// export const unstable_settings = {
-//   // Ensure that reloading on `/modal` keeps a back button present.
-//   initialRouteName: "gluestack",
-// };
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -32,8 +27,6 @@ export default function RootLayout() {
     ...FontAwesome.font,
   });
 
-  const [styleLoaded, setStyleLoaded] = useState(false);
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
     if (error) throw error;
   }, [error]);
@@ -44,23 +37,21 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
-  // useLayoutEffect(() => {
-  //   setStyleLoaded(true);
-  // }, [styleLoaded]);
-
-  // if (!loaded || !styleLoaded) {
-  //   return null;
-  // }
+  useEffect(() => {
+    initDatabase()
+  }, [])
 
   return <RootLayoutNav />;
 }
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+  const colorScheme = Appearance.getColorScheme();
+  const themeProviderValue = colorScheme === 'dark' ? DarkTheme : DefaultTheme
+
 
   return (
-    <GluestackUIProvider mode={colorScheme === "dark" ? "dark" : "light"}>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+    <GluestackUIProvider mode={colorScheme || 'dark'}>
+      <ThemeProvider value={themeProviderValue}>
         <Slot />
       </ThemeProvider>
     </GluestackUIProvider>
